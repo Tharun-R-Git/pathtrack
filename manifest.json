@@ -2,9 +2,9 @@
   "name": "PathTrack — Career & Studies Tracker",
   "short_name": "PathTrack",
   "description": "Track companies and universities for your career journey",
-  "start_url": "/",
+  "start_url": "/pathtrack/",
+  "scope": "/pathtrack/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0f0f0f",
   "theme_color": "#0f0f0f",
   "icons": [
