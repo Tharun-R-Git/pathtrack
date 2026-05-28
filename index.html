@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PathTrack" />
+  <meta name="description" content="Your personal career and higher studies tracker" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>PathTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── DARK THEME (default) ── */
+    :root, [data-theme="dark"] {
+      --bg: #0f0f0f; --bg2: #171717; --bg3: #1f1f1f; --bg4: #2a2a2a;
+      --border: #2e2e2e; --border2: #3a3a3a;
+      --text: #f0ede8; --text2: #9a9590; --text3: #5a5550;
+      --accent: #c8f060; --accent2: #9fda30; --accent-dim: rgba(200,240,96,0.12);
+      --blue: #60a8f0; --blue-dim: rgba(96,168,240,0.12);
+      --coral: #f07860; --coral-dim: rgba(240,120,96,0.12);
+      --purple: #b088f0; --purple-dim: rgba(176,136,240,0.12);
+      --amber: #f0c060; --amber-dim: rgba(240,192,96,0.12);
+      --teal: #60e0c8; --teal-dim: rgba(96,224,200,0.12);
+      --modal-overlay: rgba(0,0,0,0.72);
+      --theme-icon: "🌙";
+    }
+    /* ── LIGHT THEME ── */
+    [data-theme="light"] {
+      --bg: #f7f6f2; --bg2: #ffffff; --bg3: #f0eeea; --bg4: #e8e6e1;
+      --border: #dedad4; --border2: #ccc9c2;
+      --text: #1a1916; --text2: #6b6760; --text3: #a8a59f;
+      --accent: #5a9e00; --accent2: #4a8600; --accent-dim: rgba(90,158,0,0.10);
+      --blue: #1a6fc4; --blue-dim: rgba(26,111,196,0.10);
+      --coral: #c94428; --coral-dim: rgba(201,68,40,0.10);
+      --purple: #7040c8; --purple-dim: rgba(112,64,200,0.10);
+      --amber: #b07800; --amber-dim: rgba(176,120,0,0.10);
+      --teal: #0f8a70; --teal-dim: rgba(15,138,112,0.10);
+      --modal-overlay: rgba(0,0,0,0.40);
+      --theme-icon: "☀️";
+    }
+
+    /* ── THEME TRANSITION ── */
+    html { transition: background 0.25s, color 0.25s; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
+    #app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+
+    .header { padding: 52px 20px 16px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.5px; color: var(--text); }
+    .logo span { color: var(--accent); }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; transition: background 0.15s; }
+    .icon-btn:active { background: var(--bg4); }
+
+    .tab-bar { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 2px; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab { flex-shrink: 0; padding: 7px 14px; border-radius: 100px; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    .stats-row { display: flex; gap: 10px; padding: 14px 20px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; border-bottom: 1px solid var(--border); }
+    .stats-row::-webkit-scrollbar { display: none; }
+    .stat-chip { flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 80px; }
+    .stat-chip .val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; color: var(--text); }
+    .stat-chip .lbl { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .filter-row { display: flex; gap: 6px; padding: 12px 20px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .pill { flex-shrink: 0; padding: 5px 12px; border-radius: 100px; font-size: 12px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.15s; }
+    .pill.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+    .cards-scroll { flex: 1; overflow-y: auto; padding: 12px 16px; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); scrollbar-width: none; }
+    .cards-scroll::-webkit-scrollbar { display: none; }
+
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s, transform 0.1s; position: relative; overflow: hidden; }
+    .card:active { transform: scale(0.98); }
+    .card:hover { border-color: var(--border2); }
+    .card-accent-line { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; padding-left: 10px; }
+    .card-logo { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; overflow: hidden; flex-shrink: 0; }
+    .card-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .card-title-group { flex: 1; margin-left: 12px; min-width: 0; }
+    .card-name { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 16px; line-height: 1.2; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-sub { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: 'DM Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-badge { font-size: 10px; padding: 3px 9px; border-radius: 100px; font-family: 'DM Mono', monospace; font-weight: 500; flex-shrink: 0; }
+    .card-tags { display: flex; gap: 5px; flex-wrap: wrap; padding-left: 10px; margin-bottom: 10px; }
+    .tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--bg4); color: var(--text2); font-family: 'DM Mono', monospace; border: 1px solid var(--border); }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; padding-left: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+    .card-deadline { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+    .card-deadline.soon { color: var(--coral); }
+    .card-links { display: flex; gap: 6px; }
+    .link-btn { font-size: 11px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Mono', monospace; }
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); display: flex; padding: 10px 0; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 100; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; }
+    .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3); }
+    .nav-item.active .nav-label { color: var(--accent); }
+
+    .fab { position: fixed; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); right: 20px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; z-index: 101; border: none; font-family: 'DM Sans', sans-serif; transition: transform 0.15s; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .fab:active { transform: scale(0.92); }
+
+    .modal-overlay { position: fixed; inset: 0; background: var(--modal-overlay); z-index: 200; display: flex; align-items: flex-end; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg2); border: 1px solid var(--border); border-top: 1px solid var(--border2); border-radius: 20px 20px 0 0; width: 100%; padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32,0.72,0,1); max-height: 90dvh; overflow-y: auto; }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-select { appearance: none; }
+    .form-textarea { min-height: 80px; resize: none; line-height: 1.5; }
+    .type-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+    .type-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-family: 'DM Mono', monospace; font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .type-btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+    .btn-primary { width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: var(--bg); border: none; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .btn-primary:active { opacity: 0.85; }
+
+    /* LOGO UPLOADER */
+    .logo-uploader { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .logo-preview { width: 56px; height: 56px; border-radius: 12px; border: 1.5px dashed var(--border2); display: flex; align-items: center; justify-content: center; font-size: 22px; overflow: hidden; flex-shrink: 0; background: var(--bg3); cursor: pointer; transition: border-color 0.15s; }
+    .logo-preview:hover { border-color: var(--accent); }
+    .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-upload-info { flex: 1; }
+    .logo-upload-info p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+    .logo-upload-info span { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+    .logo-upload-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Mono', monospace; margin-top: 6px; display: inline-block; }
+    .logo-clear-btn { font-size: 11px; color: var(--coral); cursor: pointer; font-family: 'DM Mono', monospace; margin-left: 8px; }
+
+    .detail-section { margin-bottom: 20px; }
+    .detail-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .detail-val { font-size: 14px; color: var(--text); }
+    .detail-link { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px; word-break: break-all; }
+    .status-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .status-opt { flex: 1; min-width: 70px; padding: 8px 6px; text-align: center; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); cursor: pointer; }
+    .status-opt.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+    .btn-danger { width: 100%; padding: 12px; border-radius: 8px; background: var(--coral-dim); color: var(--coral); border: 1px solid rgba(240,120,96,0.3); font-family: 'DM Mono', monospace; font-size: 13px; cursor: pointer; margin-top: 8px; }
+
+    .empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-text { font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.6; }
+
+    .search-bar { margin: 0 16px 10px; padding: 10px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; width: calc(100% - 32px); transition: border-color 0.15s; }
+    .search-bar:focus { border-color: var(--accent); }
+    ::placeholder { color: var(--text3); }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">Path<span>Track</span></div>
+      <div class="header-actions">
+        <div class="icon-btn" id="searchToggle" title="Search">🔍</div>
+        <div class="icon-btn" id="themeToggle" title="Toggle theme">🌙</div>
+        <div class="icon-btn" id="exportBtn" title="Export CSV">📤</div>
+      </div>
+    </div>
+    <div class="tab-bar" id="tabBar">
+      <button class="tab active" data-tab="all">All</button>
+      <button class="tab" data-tab="company">Companies</button>
+      <button class="tab" data-tab="university">Universities</button>
+      <button class="tab" data-tab="applied">Applied</button>
+      <button class="tab" data-tab="watchlist">Watchlist</button>
+    </div>
+  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+  <input type="text" class="search-bar" id="searchBar" placeholder="Search by name, role, location..." style="display:none;" />
+  <div class="filter-row" id="filterRow"></div>
+  <div class="cards-scroll" id="cardsList"></div>
+</div>
+
+<button class="fab" id="fabBtn">+</button>
+
+<div class="bottom-nav">
+  <div class="nav-item active" data-tab="all"><div class="nav-icon">🏠</div><div class="nav-label">home</div></div>
+  <div class="nav-item" data-tab="company"><div class="nav-icon">🏢</div><div class="nav-label">companies</div></div>
+  <div class="nav-item" data-tab="university"><div class="nav-icon">🎓</div><div class="nav-label">universities</div></div>
+  <div class="nav-item" data-tab="applied"><div class="nav-icon">📬</div><div class="nav-label">applied</div></div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Add entry</div>
+    <div class="type-toggle" id="typeToggle">
+      <button class="type-btn active" data-type="company">🏢 Company</button>
+      <button class="type-btn" data-type="university">🎓 University</button>
+    </div>
+
+    <!-- LOGO UPLOADER (shared for both types) -->
+    <div class="logo-uploader">
+      <div class="logo-preview" id="logoPreview" onclick="document.getElementById('logoInput').click()">🏷️</div>
+      <div class="logo-upload-info">
+        <p>Upload a logo <span style="color:var(--accent);">(optional)</span></p>
+        <span>PNG, JPG · max 500 KB</span><br/>
+        <button class="logo-upload-btn" onclick="document.getElementById('logoInput').click()">Choose image</button>
+        <span class="logo-clear-btn" id="logoClearBtn" style="display:none;" onclick="clearLogo()">✕ Remove</span>
+      </div>
+    </div>
+    <input type="file" id="logoInput" accept="image/*" style="display:none;" />
+
+    <div id="companyFields">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Company name</label><input class="form-input" id="f-name" placeholder="e.g. Google" /></div>
+        <div class="form-group"><label class="form-label">Role</label><input class="form-input" id="f-role" placeholder="e.g. SDE L3" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="f-location" placeholder="e.g. Bangalore" /></div>
+        <div class="form-group"><label class="form-label">Salary (LPA)</label><input class="form-input" id="f-salary" type="number" placeholder="e.g. 18" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Tech stack / domain</label><input class="form-input" id="f-stack" placeholder="e.g. Java, Spring, Microservices" /></div>
+      <div class="form-group"><label class="form-label">Apply / careers link</label><input class="form-input" id="f-link" type="url" placeholder="https://careers.google.com" /></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="f-status">
+            <option value="interested">Interested</option>
+            <option value="applied">Applied</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer</option>
+            <option value="rejected">Rejected</option>
+            <option value="watchlist">Watchlist</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="f-category">
+            <option value="FAANG">FAANG</option>
+            <option value="Product">Product</option>
+            <option value="Service">Service</option>
+            <option value="Startup">Startup</option>
+            <option value="Healthcare IT">Healthcare IT</option>
+            <option value="Finance">Finance</option>
+            <option value="Campus">Campus Drive</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Deadline</label><input class="form-input" id="f-deadline" type="date" /></div>
+    </div>
+
+    <div id="uniFields" style="display:none;">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">University name</label><input class="form-input" id="u-name" placeholder="e.g. Georgia Tech" /></div>
+        <div class="form-group"><label class="form-label">Program</label><input class="form-input" id="u-program" placeholder="e.g. MS CS" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Country</label><input class="form-input" id="u-country" placeholder="e.g. USA" /></div>
+        <div class="form-group">
+          <label class="form-label">Degree type</label>
+          <select class="form-select" id="u-degree">
+            <option value="MS">MS</option>
+            <option value="PhD">PhD</option>
+            <option value="MBA">MBA</option>
+            <option value="MEng">MEng</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tuition ($/yr)</label><input class="form-input" id="u-tuition" type="number" placeholder="e.g. 25000" /></div>
+        <div class="form-group"><label class="form-label">Min CGPA</label><input class="form-input" id="u-cgpa" type="number" step="0.1" placeholder="e.g. 8.0" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">GRE required</label><select class="form-select" id="u-gre"><option value="Yes">Yes</option><option value="No">No</option><option value="Optional">Optional</option></select></div>
+        <div class="form-group"><label class="form-label">IELTS / TOEFL</label><input class="form-input" id="u-english" placeholder="e.g. IELTS 7.0" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Application portal link</label><input class="form-input" id="u-link" type="url" placeholder="https://apply.gatech.edu" /></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Application deadline</label><input class="form-input" id="u-deadline" type="date" /></div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="u-status">
+            <option value="interested">Interested</option>
+            <option value="applied">Applied</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+            <option value="waitlist">Waitlist</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="f-notes" placeholder="Interview tips, contacts, prep resources..."></textarea></div>
+    <button class="btn-primary" id="saveBtn">Save entry</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" id="detailContent"></div>
+</div>
+
+<script>
+const DB_KEY = 'pathtrack_v1';
+const THEME_KEY = 'pathtrack_theme';
+let data = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+let currentTab = 'all';
+let activeFilters = [];
+let searchQuery = '';
+let editingId = null;
+let entryType = 'company';
+let searchVisible = false;
+let pendingLogoB64 = null; // base64 of newly picked logo
+let logoChanged = false;   // tracks if user touched the logo field
+
+const save = () => localStorage.setItem(DB_KEY, JSON.stringify(data));
+const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+// ── THEME ──
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  document.querySelector('meta[name="theme-color"]') && document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#0f0f0f' : '#f7f6f2');
+  localStorage.setItem(THEME_KEY, theme);
+}
+const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+applyTheme(savedTheme);
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+// ── LOGO UPLOAD ──
+const logoInput = document.getElementById('logoInput');
+logoInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 512000) { alert('Image too large. Please pick one under 500 KB.'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingLogoB64 = ev.target.result;
+    logoChanged = true;
+    const preview = document.getElementById('logoPreview');
+    preview.innerHTML = `<img src="${pendingLogoB64}" alt="logo" />`;
+    document.getElementById('logoClearBtn').style.display = 'inline';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+function clearLogo() {
+  pendingLogoB64 = null;
+  logoChanged = true;
+  document.getElementById('logoPreview').innerHTML = entryType === 'company' ? '🏢' : '🎓';
+  document.getElementById('logoClearBtn').style.display = 'none';
+}
+
+function resetLogoUI(existingB64, type) {
+  pendingLogoB64 = null;
+  logoChanged = false;
+  const preview = document.getElementById('logoPreview');
+  if (existingB64) {
+    preview.innerHTML = `<img src="${existingB64}" alt="logo" />`;
+    document.getElementById('logoClearBtn').style.display = 'inline';
+  } else {
+    preview.innerHTML = type === 'university' ? '🎓' : '🏢';
+    document.getElementById('logoClearBtn').style.display = 'none';
+  }
+}
+
+// ── STATUS / COLOR HELPERS ──
+const STATUS_COLORS = {
+  interested: { bg: 'var(--blue-dim)', color: 'var(--blue)' },
+  applied:    { bg: 'var(--amber-dim)', color: 'var(--amber)' },
+  interview:  { bg: 'var(--purple-dim)', color: 'var(--purple)' },
+  offer:      { bg: 'var(--accent-dim)', color: 'var(--accent)' },
+  rejected:   { bg: 'var(--coral-dim)', color: 'var(--coral)' },
+  watchlist:  { bg: 'var(--bg4)', color: 'var(--text2)' },
+  accepted:   { bg: 'var(--accent-dim)', color: 'var(--accent)' },
+  waitlist:   { bg: 'var(--amber-dim)', color: 'var(--amber)' },
+  current:    { bg: 'var(--teal-dim)', color: 'var(--teal)' }
+};
+const ACCENT_COLORS = {
+  company: 'var(--blue)', university: 'var(--purple)',
+  FAANG: 'var(--accent)', Product: 'var(--teal)', Service: 'var(--blue)',
+  Startup: 'var(--amber)', 'Healthcare IT': 'var(--coral)', Campus: 'var(--purple)'
+};
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  return Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+}
+function formatDeadline(dateStr) {
+  if (!dateStr) return '';
+  const d = daysUntil(dateStr);
+  if (d < 0) return 'Deadline passed';
+  if (d === 0) return '🔴 Due today';
+  if (d <= 7)  return `🔴 ${d}d left`;
+  if (d <= 30) return `🟡 ${d}d left`;
+  return new Date(dateStr).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+}
+function getLogoText(name) {
+  if (!name) return '?';
+  const w = name.trim().split(/\s+/);
+  return w.length > 1 ? (w[0][0]+w[1][0]).toUpperCase() : name.slice(0,2).toUpperCase();
+}
+function getAccentColor(entry) {
+  if (entry.type === 'university') return 'var(--purple)';
+  return ACCENT_COLORS[entry.category] || 'var(--blue)';
+}
+
+// ── RENDER ──
+function renderStats() {
+  const total = data.length;
+  const companies = data.filter(d=>d.type==='company').length;
+  const unis = data.filter(d=>d.type==='university').length;
+  const applied = data.filter(d=>['applied','interview','offer','accepted'].includes(d.status)).length;
+  const soon = data.filter(d=>{ const x=daysUntil(d.deadline); return x!==null&&x>=0&&x<=14; }).length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-chip"><div class="val">${total}</div><div class="lbl">total</div></div>
+    <div class="stat-chip"><div class="val">${companies}</div><div class="lbl">companies</div></div>
+    <div class="stat-chip"><div class="val">${unis}</div><div class="lbl">universities</div></div>
+    <div class="stat-chip"><div class="val">${applied}</div><div class="lbl">applied</div></div>
+    <div class="stat-chip"><div class="val" style="color:${soon>0?'var(--coral)':'var(--text)'}">${soon}</div><div class="lbl">due soon</div></div>
+  `;
+}
+
+function renderFilters() {
+  const types = [...new Set(data.map(d=>d.type==='company'?(d.category||'Other'):(d.degree||'MS')))].slice(0,8);
+  document.getElementById('filterRow').innerHTML = types.map(f=>
+    `<button class="pill ${activeFilters.includes(f)?'active':''}" data-filter="${f}">${f}</button>`
+  ).join('');
+  document.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{
+    const f=p.dataset.filter;
+    activeFilters.includes(f)?activeFilters=activeFilters.filter(x=>x!==f):activeFilters.push(f);
+    renderFilters(); renderCards();
+  }));
+}
+
+function getFilteredData() {
+  let d = [...data];
+  if (currentTab==='company')    d=d.filter(x=>x.type==='company');
+  if (currentTab==='university') d=d.filter(x=>x.type==='university');
+  if (currentTab==='applied')    d=d.filter(x=>['applied','interview','offer','accepted'].includes(x.status));
+  if (currentTab==='watchlist')  d=d.filter(x=>x.status==='watchlist');
+  if (activeFilters.length) d=d.filter(x=>activeFilters.includes(x.category)||activeFilters.includes(x.degree));
+  if (searchQuery) {
+    const q=searchQuery.toLowerCase();
+    d=d.filter(x=>(x.name||'').toLowerCase().includes(q)||(x.role||'').toLowerCase().includes(q)||(x.location||'').toLowerCase().includes(q)||(x.program||'').toLowerCase().includes(q)||(x.country||'').toLowerCase().includes(q));
+  }
+  return d;
+}
+
+function renderCards() {
+  const filtered = getFilteredData();
+  const list = document.getElementById('cardsList');
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nothing here yet.<br>Tap + to add your first entry.</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(entry => {
+    const color = getAccentColor(entry);
+    const sc = STATUS_COLORS[entry.status] || STATUS_COLORS.interested;
+    const dl = entry.deadline ? formatDeadline(entry.deadline) : '';
+    const isSoon = entry.deadline && daysUntil(entry.deadline)!==null && daysUntil(entry.deadline)<=7 && daysUntil(entry.deadline)>=0;
+    const tags = entry.type==='company'
+      ? [entry.category,...(entry.stack?entry.stack.split(',').map(s=>s.trim()).slice(0,2):[])].filter(Boolean)
+      : [entry.degree,entry.country,entry.gre!=='No'?'GRE':''].filter(Boolean);
+
+    // Logo: use uploaded image or fallback to initials
+    const logoHTML = entry.logo
+      ? `<div class="card-logo"><img src="${entry.logo}" alt="${entry.name} logo" /></div>`
+      : `<div class="card-logo" style="background:${color}22;color:${color}">${getLogoText(entry.name)}</div>`;
+
+    return `<div class="card" data-id="${entry.id}">
+      <div class="card-accent-line" style="background:${color}"></div>
+      <div class="card-top">
+        ${logoHTML}
+        <div class="card-title-group">
+          <div class="card-name">${entry.name||'—'}</div>
+          <div class="card-sub">${entry.type==='company'?(entry.role||'')+(entry.location?' · '+entry.location:''):(entry.program||'')+(entry.country?' · '+entry.country:'')}</div>
+        </div>
+        <span class="card-badge" style="background:${sc.bg};color:${sc.color}">${entry.status}</span>
+      </div>
+      <div class="card-tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="card-footer">
+        <div class="card-deadline ${isSoon?'soon':''}">${dl}</div>
+        <div class="card-links">
+          ${(entry.link||entry.portalLink)?`<button class="link-btn" onclick="openLink('${entry.link||entry.portalLink}');event.stopPropagation()">Apply ↗</button>`:''}
+          <button class="link-btn" onclick="openDetail('${entry.id}');event.stopPropagation()">Details</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>openDetail(c.dataset.id)));
+}
+
+function openLink(url) { if (url) window.open(url,'_blank'); }
+
+function openDetail(id) {
+  const e = data.find(x=>x.id===id);
+  if (!e) return;
+  const color = getAccentColor(e);
+  const statuses = e.type==='company'
+    ? ['interested','applied','interview','offer','rejected','watchlist']
+    : ['interested','applied','accepted','rejected','waitlist'];
+
+  const logoHTML = e.logo
+    ? `<div style="width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;"><img src="${e.logo}" style="width:100%;height:100%;object-fit:cover;" alt="logo"/></div>`
+    : `<div style="width:52px;height:52px;border-radius:12px;background:${color}22;color:${color};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:18px;flex-shrink:0;">${getLogoText(e.name)}</div>`;
+
+  const fields = e.type==='company' ? `
+    <div class="detail-section"><div class="detail-label">Role</div><div class="detail-val">${e.role||'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">Location</div><div class="detail-val">${e.location||'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">Salary</div><div class="detail-val">${e.salary?e.salary+' LPA':'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">Tech stack</div><div class="detail-val">${e.stack||'—'}</div></div>
+  ` : `
+    <div class="detail-section"><div class="detail-label">Program</div><div class="detail-val">${e.program||'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">Country</div><div class="detail-val">${e.country||'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">Tuition</div><div class="detail-val">${e.tuition?'$'+Number(e.tuition).toLocaleString()+'/yr':'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">Min CGPA / GRE</div><div class="detail-val">${e.cgpa||'—'} CGPA · GRE: ${e.gre||'—'}</div></div>
+    <div class="detail-section"><div class="detail-label">English requirement</div><div class="detail-val">${e.english||'—'}</div></div>
+  `;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      ${logoHTML}
+      <div style="min-width:0;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:19px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name}</div>
+        <div style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px;">${e.type==='university'?'🎓 University':'🏢 Company'}</div>
+      </div>
+    </div>
+    <div class="detail-section"><div class="detail-label">Status</div>
+      <div class="status-row">${statuses.map(s=>`<div class="status-opt ${e.status===s?'active':''}" onclick="updateStatus('${id}','${s}')">${s}</div>`).join('')}</div>
+    </div>
+    ${fields}
+    ${e.deadline?`<div class="detail-section"><div class="detail-label">Deadline</div><div class="detail-val">${formatDeadline(e.deadline)}</div></div>`:''}
+    ${(e.link||e.portalLink)?`<div class="detail-section"><div class="detail-label">Apply link</div><div class="detail-val"><a class="detail-link" href="${e.link||e.portalLink}" target="_blank">${e.link||e.portalLink}</a></div></div>`:''}
+    ${e.notes?`<div class="detail-section"><div class="detail-label">Notes</div><div class="detail-val" style="line-height:1.6;white-space:pre-wrap;">${e.notes}</div></div>`:''}
+    <button class="btn-primary" onclick="editEntry('${id}')">Edit entry</button>
+    <button class="btn-danger" onclick="deleteEntry('${id}')">Delete entry</button>
+  `;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function updateStatus(id, status) {
+  const e = data.find(x=>x.id===id);
+  if (e) { e.status=status; save(); renderCards(); openDetail(id); }
+}
+function deleteEntry(id) {
+  if (confirm('Delete this entry?')) {
+    data=data.filter(x=>x.id!==id); save(); renderStats(); renderFilters(); renderCards(); closeDetail();
+  }
+}
+
+function editEntry(id) {
+  closeDetail();
+  const e = data.find(x=>x.id===id);
+  if (!e) return;
+  editingId=id; entryType=e.type; setEntryType(e.type);
+  document.getElementById('modalTitle').textContent='Edit entry';
+  if (e.type==='company') {
+    document.getElementById('f-name').value=e.name||'';
+    document.getElementById('f-role').value=e.role||'';
+    document.getElementById('f-location').value=e.location||'';
+    document.getElementById('f-salary').value=e.salary||'';
+    document.getElementById('f-stack').value=e.stack||'';
+    document.getElementById('f-link').value=e.link||'';
+    document.getElementById('f-status').value=e.status||'interested';
+    document.getElementById('f-category').value=e.category||'Other';
+    document.getElementById('f-deadline').value=e.deadline||'';
+  } else {
+    document.getElementById('u-name').value=e.name||'';
+    document.getElementById('u-program').value=e.program||'';
+    document.getElementById('u-country').value=e.country||'';
+    document.getElementById('u-degree').value=e.degree||'MS';
+    document.getElementById('u-tuition').value=e.tuition||'';
+    document.getElementById('u-cgpa').value=e.cgpa||'';
+    document.getElementById('u-gre').value=e.gre||'Yes';
+    document.getElementById('u-english').value=e.english||'';
+    document.getElementById('u-link').value=e.portalLink||'';
+    document.getElementById('u-deadline').value=e.deadline||'';
+    document.getElementById('u-status').value=e.status||'interested';
+  }
+  document.getElementById('f-notes').value=e.notes||'';
+  resetLogoUI(e.logo||null, e.type);
+  document.getElementById('addModal').classList.add('open');
+}
+
+function setEntryType(type) {
+  entryType=type;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));
+  document.getElementById('companyFields').style.display=type==='company'?'':'none';
+  document.getElementById('uniFields').style.display=type==='university'?'':'none';
+  const preview=document.getElementById('logoPreview');
+  if (!pendingLogoB64 && !logoChanged) preview.innerHTML=type==='university'?'🎓':'🏢';
+}
+
+function collectForm() {
+  const base = {
+    id: editingId||genId(),
+    type: entryType,
+    notes: document.getElementById('f-notes').value.trim()
+  };
+  // Logo: use pending if changed, else keep existing
+  if (logoChanged) {
+    base.logo = pendingLogoB64; // null if cleared, base64 if uploaded
+  } else if (editingId) {
+    const existing = data.find(x=>x.id===editingId);
+    base.logo = existing ? existing.logo : null;
+  }
+  if (entryType==='company') {
+    return { ...base,
+      name: document.getElementById('f-name').value.trim(),
+      role: document.getElementById('f-role').value.trim(),
+      location: document.getElementById('f-location').value.trim(),
+      salary: document.getElementById('f-salary').value,
+      stack: document.getElementById('f-stack').value.trim(),
+      link: document.getElementById('f-link').value.trim(),
+      status: document.getElementById('f-status').value,
+      category: document.getElementById('f-category').value,
+      deadline: document.getElementById('f-deadline').value
+    };
+  } else {
+    return { ...base,
+      name: document.getElementById('u-name').value.trim(),
+      program: document.getElementById('u-program').value.trim(),
+      country: document.getElementById('u-country').value.trim(),
+      degree: document.getElementById('u-degree').value,
+      tuition: document.getElementById('u-tuition').value,
+      cgpa: document.getElementById('u-cgpa').value,
+      gre: document.getElementById('u-gre').value,
+      english: document.getElementById('u-english').value.trim(),
+      portalLink: document.getElementById('u-link').value.trim(),
+      deadline: document.getElementById('u-deadline').value,
+      status: document.getElementById('u-status').value
+    };
+  }
+}
+
+function resetForm() {
+  ['f-name','f-role','f-location','f-salary','f-stack','f-link','f-deadline',
+   'u-name','u-program','u-country','u-tuition','u-cgpa','u-english','u-link','u-deadline','f-notes']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f-status').value='interested';
+  document.getElementById('f-category').value='FAANG';
+  document.getElementById('u-degree').value='MS';
+  document.getElementById('u-gre').value='Yes';
+  document.getElementById('u-status').value='interested';
+  resetLogoUI(null, 'company');
+}
+
+function closeDetail() { document.getElementById('detailModal').classList.remove('open'); }
+function closeAdd() { document.getElementById('addModal').classList.remove('open'); editingId=null; resetForm(); }
+
+// ── SEED DATA ──
+function seedIfEmpty() {
+  if (data.length>0) return;
+  data = [
+    { id:genId(), type:'company', name:'Optum', role:'SDE', location:'Hyderabad', salary:'10', stack:'Java, Spring', link:'https://careers.unitedhealthgroup.com', status:'current', category:'Healthcare IT', deadline:'', notes:'Joining soon. Track internal moves too.', logo:null },
+    { id:genId(), type:'company', name:'Google', role:'SWE L3', location:'Bangalore', salary:'30', stack:'C++, Python, Distributed', link:'https://careers.google.com', status:'watchlist', category:'FAANG', deadline:'', notes:'Target after 2-3 years. Start DSA prep early.', logo:null },
+    { id:genId(), type:'university', name:'Georgia Tech', program:'MS CS', country:'USA', degree:'MS', tuition:'14000', cgpa:'3.0', gre:'Optional', english:'TOEFL 90', portalLink:'https://gradapp.gatech.edu', deadline:'2027-01-15', status:'interested', notes:'OMSCS is fully online and affordable.', logo:null }
+  ];
+  save();
+}
+
+// ── EVENT WIRING ──
+document.getElementById('fabBtn').addEventListener('click',()=>{
+  editingId=null; resetForm(); setEntryType('company');
+  document.getElementById('modalTitle').textContent='Add entry';
+  document.getElementById('addModal').classList.add('open');
+});
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const entry=collectForm();
+  if (!entry.name) { alert('Please enter a name.'); return; }
+  if (editingId) { const idx=data.findIndex(x=>x.id===editingId); if(idx!==-1) data[idx]=entry; }
+  else data.unshift(entry);
+  save(); closeAdd(); renderStats(); renderFilters(); renderCards();
+});
+
+document.getElementById('typeToggle').querySelectorAll('.type-btn').forEach(b=>
+  b.addEventListener('click',()=>setEntryType(b.dataset.type))
+);
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  currentTab=t.dataset.tab;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  renderCards();
+}));
+
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>{
+  currentTab=n.dataset.tab;
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  n.classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===currentTab));
+  renderCards();
+}));
+
+document.getElementById('addModal').addEventListener('click',e=>{ if(e.target===document.getElementById('addModal')) closeAdd(); });
+document.getElementById('detailModal').addEventListener('click',e=>{ if(e.target===document.getElementById('detailModal')) closeDetail(); });
+
+document.getElementById('searchToggle').addEventListener('click',()=>{
+  searchVisible=!searchVisible;
+  document.getElementById('searchBar').style.display=searchVisible?'block':'none';
+  if(searchVisible) document.getElementById('searchBar').focus();
+});
+document.getElementById('searchBar').addEventListener('input',e=>{ searchQuery=e.target.value; renderCards(); });
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const csv=['Type,Name,Role/Program,Location/Country,Status,Deadline,Link,Notes',
+    ...data.map(e=>[e.type,e.name,e.type==='company'?e.role:e.program,e.type==='company'?e.location:e.country,e.status,e.deadline||'',e.link||e.portalLink||'',(e.notes||'').replace(/,/g,';').replace(/\n/g,' ')].map(v=>`"${v||''}"`).join(','))
+  ].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='pathtrack_export.csv'; a.click();
+});
+
+// ── INIT ──
+seedIfEmpty();
+renderStats(); renderFilters(); renderCards();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js")}</script>
+</body>
+</html>
